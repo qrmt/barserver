@@ -52,9 +52,8 @@ class Controller():
 			if self.currentProcess:
 				if self.currentProcess.is_alive():
 					self.currentProcess.terminate()
-					print 'terminated current process'
 
-			return func(*args, **kwargs)
+			return func(self, *args, **kwargs)
 		return terminateCurrentProcess
 
 	@terminate
@@ -114,7 +113,7 @@ class Controller():
 		self.currentProcess.start()
 
 
-	#@terminate
+	@terminate
 	def stopLights(self):
 		self.program.shutPixels(self.pixels)
 
