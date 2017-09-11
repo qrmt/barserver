@@ -3,8 +3,9 @@ from pixel import Pixel
 import time
 import random
 from signal_strength import StrengthController
-import multiprocessing
-
+from multiprocessing import Process
+from functools import wraps
+import sys
 
 # LED strip configuration:
 LED_COUNT      = 155      # Number of LED pixels.
@@ -25,6 +26,7 @@ class Controller():
 		self.strip.begin()
 
 		self.program = Program(self.strip, PIXEL_AMOUNT)
+		self.currentProcess = None
 
 		'''Create pixels'''
 		self.pixels = []
@@ -44,48 +46,77 @@ class Controller():
 #		sproc = multiprocessing.Process(target=strength.start)
 #		sproc.start()
 
+	def terminate(func):
+		@wraps(func)
+		def terminateCurrentProcess(self, *args, **kwargs):
+			if self.currentProcess:
+				if self.currentProcess.is_alive():
+					self.currentProcess.terminate()
+					print 'terminated current process'
 
+			return func(*args, **kwargs)
+		return terminateCurrentProcess
+
+	@terminate
 	def runWormChase(self):
-		while (True):
-			color = randomColor()
+		def chase():
+			while (True):
+				color = randomColor()
 
-			wormPixels = []
-			i = 0
-			while i < len(wormPixels):
-				wormPixels.append(self.pixels[i])
-				i = i + 2
+				wormPixels = []
+				i = 0
+				while i < len(wormPixels):
+					wormPixels.append(self.pixels[i])
+					i = i + 2
 
-			i = 1
-			while i < len(wormPixels):
-				wormPixels.append(self.pixels[i])
-				i = i + 2
+				i = 1
+				while i < len(wormPixels):
+					wormPixels.append(self.pixels[i])
+					i = i + 2
 
-			self.program.wormChase(color, 1000, 2, wormPixels)
+				self.program.wormChase(color, 1000, 2, wormPixels)
 
+		self.currentProcess = Process(target=chase)
+		self.currentProcess.start()
+
+	@terminate
 	def runCheckerPattern(self):
-		while(True):
-			color = randomColor()
-			self.program.checkerPattern(color, 300, self.pixels)
+		def checker():
+			while(True):
+				color = randomColor()
+				self.program.checkerPattern(color, 300, self.pixels)
 
+		self.currentProcess = Process(target=checker)
+		self.currentProcess.start()
+
+	@terminate
 	def runRandomColor(self):
-		while(True):
+		def randomColor():
 			self.program.randomColor(self.pixels)
 
+		self.currentProcess = Process(target=randomColor)
+		self.currentProcess.start()
 
+	@terminate
 	def setFullColor(self, color):
 		self.program.setFullColor(self.pixels, color)
 
-
+	@terminate
 	def runPanicMode(self):
-		while(True):
-			self.program.setFullColor(self.pixels, Color(255,0,0))
-			time.sleep(0.5)
-			self.program.shutPixels(self.pixels)
-			time.sleep(0.5)
+		def panicMode():
+			while(True):
+				self.program.setFullColor(self.pixels, Color(255,0,0))
+				time.sleep(0.5)
+				self.program.shutPixels(self.pixels)
+				time.sleep(0.5)
 
-	def colorChooser(self):
-		self.program.startColorWheel(self.pixels)
+		self.currentProcess = Process(target=panicMode)
+		self.currentProcess.start()
 
+
+	#@terminate
+	def stopLights(self):
+		self.program.shutPixels(self.pixels)
 
 def randomColor():
 	blue = random.randint(0,255)
@@ -93,10 +124,10 @@ def randomColor():
 	green = random.randint(0,255)
 	return Color(red, green, blue)
 
-controller = Controller()
+#controller = Controller()
 #controller.runCheckerPattern()
 #controller.runRandomColor()
 #controller.setFullColor(Color(255,0,80))
 #controller.runPanicMode()
 #controller.runWormChase()
-controller.colorChooser()
+#controller.colorChooser()

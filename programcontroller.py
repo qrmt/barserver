@@ -1,8 +1,6 @@
 from pixel import *
 import random
 import time
-from Tkinter import *
-from tkColorChooser import askcolor
 
 
 def Color(red, green, blue):
@@ -59,17 +57,17 @@ class Program():
 
 
 	def randomColor(self, pixels):
-		for pixel in pixels:
-			blue = random.randint(0,255)
-			red = random.randint(0,255)
-			green = random.randint(0,255)
+		while(True):
+			for pixel in pixels:
+				blue = random.randint(0,255)
+				red = random.randint(0,255)
+				green = random.randint(0,255)
 
-			color = Color(red, green, blue)
+				color = Color(red, green, blue)
 
-			pixel.lightPixel(self.strip, color)
-			time.sleep(0.5)
+				pixel.lightPixel(self.strip, color)
 
-		self.strip.show()
+			self.strip.show()
 
 
 	def setFullColor(self, pixels, color):
@@ -83,14 +81,6 @@ class Program():
 			pixel.shutPixel(self.strip)
 
 		self.strip.show()
-
-	def startColorWheel(self, pixels):
-		def getColor():
-			while True:
-			    color = askcolor()
-			    print color
-		Button(text='Select Color', command=getColor).pack()
-		mainloop()
 
 	# -------------------------------------------------------
 	# Individual led functions:

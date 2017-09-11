@@ -1,6 +1,5 @@
 from flask import Flask
 from controller import Controller
-import multiprocessing
 import time
 
 
@@ -8,38 +7,40 @@ app = Flask(__name__)
 
 abort_current = 0
 controller = Controller()
-current_process = None
 
 
 @app.route('/worm')
 def worm():
-	global current_process
+	global controller
 
-	if current_process:
-		current_process.terminate()
-	current_process = multiprocessing.Process(target=controller.runWormChase)
-	current_process.start()
+	controller.runWormChase()
 
-	return 'LOL'
+	return 'Success'
 
 @app.route('/checker')
 def checker():
-	global current_process
-	if current_process:
-		current_process.terminate()
-	current_process = multiprocessing.Process(target=controller.runCheckerPattern)
-	current_process.start()
+	global controller
+	controller.runCheckerPattern()
 
-	return 'LOL'
+	return 'Success'
 
 @app.route('/random')
 def randomPattern():
-	global current_process
-	if current_process:
-		current_process.terminate()
-	current_process = multiprocessing.Process(target=controller.runRandomColor)
-	current_process.start()
-	return 'LOL'
+	global controller
+	controller.runRandomColor()
+	return 'Success'
+
+@app.route('/stop')
+def stopLights():
+	global controller
+	controller.stopLights()
+	return 'Success'
+
+@app.route('/panic')
+def panicMode():
+	global controller
+	controller.runPanicMode()
+	return 'Success'
 
 if __name__ == '__main__':
 	app.debug = True
