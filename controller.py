@@ -117,6 +117,25 @@ class Controller():
 	def stopLights(self):
 		self.program.shutPixels(self.pixels)
 
+	@terminate
+	def runRainbow(self):
+		def rainbow():
+			while True:
+				self.program.rainbow()
+
+		self.currentProcess = Process(target=rainbow)
+		self.currentProcess.start()
+
+	@terminate
+	def runRainbowCycle(self):
+		def rainbowCycle():
+			while True:
+				self.program.rainbowCycle()
+
+		self.currentProcess = Process(target=rainbowCycle)
+		self.currentProcess.start()
+
+
 def randomColor():
 	blue = random.randint(0,255)
 	red = random.randint(0,255)

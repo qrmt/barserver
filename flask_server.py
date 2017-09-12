@@ -42,6 +42,25 @@ def panicMode():
 	controller.runPanicMode()
 	return 'Success'
 
+@app.route('/rainbow')
+def rainbow():
+	global controller
+	controller.runRainbow()
+	return 'Success'
+
+@app.route('/rainbow')
+def rainbow():
+	global controller
+	controller.runRainbow()
+	return 'Success'
+
+
+@app.route('/rainbowCycle')
+def rainbowCycle():
+	global controller
+	controller.runRainbowCycle()
+	return 'Success'
+
 if __name__ == '__main__':
 	app.debug = True
 	app.run(host='0.0.0.0')
