@@ -97,7 +97,8 @@ class Controller():
 		self.currentProcess.start()
 
 	@terminate
-	def setFullColor(self, color):
+	def setFullColor(self, red, green, blue):
+		color = Color(red, green, blue)
 		self.program.setFullColor(self.pixels, color)
 
 	@terminate

@@ -8,6 +8,9 @@ app = Flask(__name__)
 abort_current = 0
 controller = Controller()
 
+@app.route('/')
+def home():
+	return render_template('index.html')
 
 @app.route('/worm')
 def worm():
@@ -59,6 +62,18 @@ def rainbow():
 def rainbowCycle():
 	global controller
 	controller.runRainbowCycle()
+	return 'Success'
+
+@app.route('/setColor', methods=['POST'])
+def setColor():
+	data = request.json
+
+	red = data['r']
+	green = data['g']
+	blue = data['b']
+
+	global controller
+	controller.setFullColor(red, green, blue)
 	return 'Success'
 
 if __name__ == '__main__':
