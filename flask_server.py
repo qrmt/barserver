@@ -1,4 +1,7 @@
 from flask import Flask
+from flask import render_template
+from flask import request
+
 from controller import Controller
 import time
 
@@ -51,10 +54,10 @@ def rainbow():
 	controller.runRainbow()
 	return 'Success'
 
-@app.route('/rainbow')
-def rainbow():
+@app.route('/fft')
+def fft():
 	global controller
-	controller.runRainbow()
+	controller.fftRunner()
 	return 'Success'
 
 
@@ -78,4 +81,4 @@ def setColor():
 
 if __name__ == '__main__':
 	app.debug = True
-	app.run(host='0.0.0.0')
+	app.run(host='0.0.0.0', threaded=False)

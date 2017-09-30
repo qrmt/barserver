@@ -1,6 +1,7 @@
 from pixel import *
 import random
 import time
+from beatMatcher import BeatMatcher
 
 
 def Color(red, green, blue):
@@ -15,6 +16,11 @@ class Program():
 	def __init__(self, strip, matrix_size):
 		self.strip = strip
 		self.matrix_size = matrix_size
+
+	def beatMatching(self, pixels):
+		matcher = BeatMatcher(self.strip, pixels)
+		matcher.beatmatch()
+
 
 	def wormChase(self, color, wait_ms, worm_size, pixels):
 		'''worm that goes around'''
@@ -68,6 +74,7 @@ class Program():
 				pixel.lightPixel(self.strip, color)
 
 			self.strip.show()
+			time.sleep(0.5)
 
 
 	def setFullColor(self, pixels, color):
@@ -103,7 +110,7 @@ class Program():
 				for i in range(0, self.strip.numPixels(), 3):
 					self.strip.setPixelColor(i+q, 0)
 
-	def wheel(pos):
+	def wheel(self, pos):
 		"""Generate rainbow colors across 0-255 positions."""
 		if pos < 85:
 			return Color(pos * 3, 255 - pos * 3, 0)
@@ -118,7 +125,7 @@ class Program():
 		"""Draw rainbow that fades across all pixels at once."""
 		for j in range(256*iterations):
 			for i in range(self.strip.numPixels()):
-				self.strip.setPixelColor(i, wheel((i+j) & 255))
+				self.strip.setPixelColor(i, self.wheel((i+j) & 255))
 			self.strip.show()
 			time.sleep(wait_ms/1000.0)
 
@@ -126,7 +133,7 @@ class Program():
 		"""Draw rainbow that uniformly distributes itself across all pixels."""
 		for j in range(256*iterations):
 			for i in range(self.strip.numPixels()):
-				self.strip.setPixelColor(i, wheel(((i * 256 / self.strip.numPixels()) + j) & 255))
+				self.strip.setPixelColor(i, self.wheel(((i * 256 / self.strip.numPixels()) + j) & 255))
 			self.strip.show()
 			time.sleep(wait_ms/1000.0)
 
@@ -135,7 +142,7 @@ class Program():
 		for j in range(256):
 			for q in range(3):
 				for i in range(0, self.strip.numPixels(), 3):
-					self.strip.setPixelColor(i+q, wheel((i+j) % 255))
+					self.strip.setPixelColor(i+q, self.wheel((i+j) % 255))
 				self.strip.show()
 				time.sleep(wait_ms/1000.0)
 				for i in range(0, self.strip.numPixels(), 3):

@@ -3,23 +3,109 @@
   <head>
     <meta charset="UTF-8">
     <title>Bar server</title>
-    <link rel="stylesheet" media="screen" type="text/css" href="localhost:5000/css/main.css" />
+
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/main.css') }}" />
+    <link rel="stylesheet" media="screen" type="text/css" href="{{ url_for('static', filename='css/colorpicker.css') }}" />
+
+    <script src="{{ url_for('static', filename='js/jquery.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/colorpicker.js') }}"></script>
+
+
   </head>
   <body>
+    <script>
+      // Simple buttons code
+      function rainbow() {
+        $.get('/rainbow');
+      }
+      function rainbowCycle() {
+        $.get('/rainbowCycle');
+      }
+      function panic() {
+        $.get('/panic');
+      }
+      function stop() {
+        $.get('/stop');
+      }
+      function random() {
+        $.get('/random');
+      }
+      function checker() {
+        $.get('/checker');
+      }
+
+      function beatMatch() {
+        $.get('/fft');
+      }
+      function lounge() {
+        $.ajax({
+          type: 'POST',
+          contentType: 'application/json',
+          url: '/setColor',
+          dataType : 'json',
+          data : JSON.stringify({
+            'r':255,
+            'g':0,
+            'b':50
+          }),
+          success : function(result) {
+            console.log(result);
+          },error : function(result){
+             console.log(result);
+          }
+        });
+      }
+    </script>
+    <script>
+      // Color picker code
+      var timer;
+      var currentColor;
+      $('#colorpickerHolder').ColorPicker({flat: true,
+         onChange: function(hsb, hex, rgb, el) {
+           clearTimeout(timer);
+           timer = setTimeout( refresh , 300 );
+           currentColor = rgb;
+      }});
+      var refresh = function () {
+        // do stuff
+        console.log(currentColor);
+        //$.post( "http://localhost:5000/setColor", { color: currentColor} );
+        $.ajax({
+          type: 'POST',
+          contentType: 'application/json',
+          url: '/setColor',
+          dataType : 'json',
+          data : JSON.stringify(currentColor),
+          success : function(result) {
+            console.log(result);
+          },error : function(result){
+             console.log(result);
+          }
+        });
+    };
+    </script>
   	<div>
 	  <table id="matrix">
 	    <tr>
 	      <td>
-	        <button id="b1">Lol</button>
+	        <button id="b1" onclick="rainbow()">Rainbow</button>
 	       </td>
-	      <td><button id="b2">Asd</button></td>
+	      <td><button id="b2" onclick="panic()">Panic</button></td>
 	    </tr>
-	  
 	    <tr>
-	      <td><button id="b3">Biets</button></td>
-	      <td><button id="b4">Rip</button></td>
+	      <td><button id="b3" onclick="stop()">Stop</button></td>
+	      <td><button id="b4" onclick="random()">Random</button></td>
 	    </tr>
+      <tr>
+	      <td><button id="b5" onclick="checker()">Checker</button></td>
+	      <td><button id="b6" onclick="rainbowCycle()">Rainbow Cycle</button></td>
+	    </tr>
+      <tr>
+        <td><button id="b7" onclick="lounge()">Lounge</button></td>
+        <td><button id="b8" onclick="beatMatch()">Beat Match</button></td>
+      </tr>
 	  </table>
 	</div>
+  <div id="colorpickerHolder"></div>
   </body>
 </html>

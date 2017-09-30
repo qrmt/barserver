@@ -57,6 +57,15 @@ class Controller():
 		return terminateCurrentProcess
 
 	@terminate
+	def fftRunner(self):
+		def startFFT():
+			self.program.beatMatching(self.pixels)
+
+		self.currentProcess = Process(target=startFFT)
+		self.currentProcess.start()
+
+
+	@terminate
 	def runWormChase(self):
 		def chase():
 			while (True):
@@ -90,10 +99,10 @@ class Controller():
 
 	@terminate
 	def runRandomColor(self):
-		def randomColor():
+		def randColor():
 			self.program.randomColor(self.pixels)
 
-		self.currentProcess = Process(target=randomColor)
+		self.currentProcess = Process(target=randColor)
 		self.currentProcess.start()
 
 	@terminate

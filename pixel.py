@@ -12,5 +12,3 @@ class Pixel():
 	def shutPixel(self, strip):
 		for i in range(self.index, self.index + self.count):
 			strip.setPixelColor(i, 0)
-
-

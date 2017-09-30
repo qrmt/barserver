@@ -1,6 +1,11 @@
 div {
-  border: 1px solid blue;
-  text-align: center;
+  margin: 0 auto;
+  padding: 0;
+}
+
+#colorpickerHolder {
+  height: 176px;
+  width: 356px;
 }
 
 #matrix {
