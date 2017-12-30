@@ -67,6 +67,7 @@ class StrengthController():
 				if scaled < 0:
 					scaled = 0
 
+				
 				pix = self.pixels[scaled]
 				for pixel in pix:
 					index = 105 + pixel

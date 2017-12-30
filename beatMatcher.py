@@ -32,9 +32,12 @@ class BeatMatcher():
         self.chunk = 512 # Use a multiple of 8
 
         self.window_length = 4
-        self.delay = 0.1
+        self.delay = 0.15
         self.lighted = False
-
+        self.last_was_beat = False
+        self.lastColorId = 0
+        self.smoothMode = True
+        self.show_amplitude_bars = True
 
 
     def fft(self, data, log_scale=False, div_by=100):
@@ -54,6 +57,7 @@ class BeatMatcher():
 
     def beatmatch(self):
         beat_id = 0
+        counter = 0
 
         avg_buffer = np.ones(self.window_length)
         # Set up audio
@@ -65,6 +69,7 @@ class BeatMatcher():
 
 
         while True:
+            counter += 1
             l,data = data_in.read()
             #data_in.pause(1) # Pause capture whilst RPi processes data
             if l:
@@ -76,12 +81,13 @@ class BeatMatcher():
                 except:
                     pass
                 try:
-                    bass_range = xy[0:1]
+                    bass_range = xy[0]
                     amplitude = np.linalg.norm(bass_range)
+                    total_amplitude = np.linalg.norm(xy)
                     baseline = np.average(avg_buffer)
                     ratio = amplitude / baseline
-
-                    if (ratio > 2):
+                    isBass = False
+                    if (ratio > 2.5) and amplitude > 100:
                         isBass = True
 
                     avg_buffer = np.roll(avg_buffer, 1)
@@ -89,17 +95,46 @@ class BeatMatcher():
 
                     if isBass and not self.lighted:
                         #print 'Beat' + str(beat_id)
+                        # Potential overflow possibility here
                         beat_id += 1
                         isBass = False
 
-                        color = self.wheel(beat_id % 255)
+                        if self.smoothMode:
+                            color = self.wheel(beat_id % 255)
+                        else:
+                            color = self.randomWheel()
+
+                        p_idx = 0
                         for pixel in self.pixels:
+                            # Don't light the big bars, use them for amplitude viz
+                            if p_idx == 8 or p_idx == 9 and self.show_amplitude_bars:
+                                continue
                             pixel.lightPixel(self.strip, color)
+                            p_idx += 1
 
                         self.lighted = True
-                        self.strip.show()
+                        #self.strip.show()
                         t = Timer(self.delay, self.shutLights)
                         t.start()
+
+                    elif isBass and self.lighted:
+                        self.last_was_beat = True
+                    else:
+                        self.last_was_beat = False
+
+                    
+                    # Set amplitude bars
+                    level = int((14.0*total_amplitude) / 5000.0)
+                    if level > 14:
+                        level = 14
+                    
+                    if counter % 4 == 0:
+                        counter = 0
+                        color = self.wheel(beat_id % 255)
+                        self.setAmplitudeBars(self.pixels[8], 13, 19, 34, 40, level, color)
+                        self.setAmplitudeBars(self.pixels[9], 21, 27, 0, 7, level, color)
+                    
+                    self.strip.show()
 
 
                 except audioop.error, e:
@@ -109,10 +144,56 @@ class BeatMatcher():
             time.sleep(0.005)
             #data_in.pause(0) # Resume capture
 
+    def setAmplitudeBars(self, pxl, low, top, toprow_start, toprow_end, level, color):
+        # Approx 12 levels
+        # Bottom row:
+        if level > 0:
+            for idx in range(low, top+1):
+                pxl.lightIndividualLed(self.strip, idx, color)
+
+        # Side rows per level
+        for j in range(0, level):
+            top += 1
+            low -= 1
+
+            if low < 0:
+                low = 0
+
+            pxl.lightIndividualLed(self.strip, top, color)
+            pxl.lightIndividualLed(self.strip, low, color)
+
+        # If max level, light top row also
+        if level == 14:
+            for idx in range(toprow_start,toprow_end):
+                pxl.lightIndividualLed(self.strip, idx, color)
+        else:
+            for idx in range(toprow_start-1,toprow_end+1):
+                pxl.shutIndividualLed(self.strip, idx)
+
+            # hack for the last led in the strip (looks like top row but at the end on pixel #10)
+            pxl.shutIndividualLed(self.strip, pxl.count)
+
+
+
+        # Shut down others
+        for j in range(0, 13-level):
+            top += 1
+            low -= 1
+
+            pxl.shutIndividualLed(self.strip, top)
+            pxl.shutIndividualLed(self.strip, low)
+
+
+
 
     def shutLights(self):
+        p_idx = 0
         for pixel in self.pixels:
+            if (p_idx == 8 or p_idx == 9) and self.show_amplitude_bars:
+                break
+            
             pixel.shutPixel(self.strip)
+            p_idx += 1
 
         self.strip.show()
         self.lighted = False
@@ -126,3 +207,15 @@ class BeatMatcher():
     	else:
     		pos -= 170
     		return Color(0, pos * 3, 255 - pos * 3)
+
+    def randomWheel(self):
+        # Calculate new mean opposite on then circle
+        mu = self.lastColorId + 127 % 255
+        mu = float(mu) / 255.0
+        mu = mu * 2*np.pi - np.pi
+
+        newId = np.random.vonmises(mu, 1)
+        newId = int(np.floor((newId + np.pi) / (2*np.pi) * 255.0))
+
+        self.lastColorId = newId
+        return self.wheel(newId)

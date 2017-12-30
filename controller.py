@@ -8,13 +8,13 @@ from functools import wraps
 import sys
 
 # LED strip configuration:
-LED_COUNT      = 155      # Number of LED pixels.
+LED_COUNT      = 300      # Number of LED pixels.
 LED_PIN        = 18      # GPIO pin connected to the pixels (must support PWM!).
 LED_FREQ_HZ    = 800000  # LED signal frequency in hertz (usually 800khz)
 LED_DMA        = 5       # DMA channel to use for generating signal (try 5)
 LED_BRIGHTNESS = 120# 255     # Set to 0 for darkest and 255 for brightest
 LED_INVERT     = False   # True to invert the signal (when using NPN transistor level shift)
-PIXEL_AMOUNT   = 12
+PIXEL_AMOUNT   = 10
 
 
 
@@ -29,13 +29,18 @@ class Controller():
 		self.currentProcess = None
 
 		'''Create pixels'''
+		'''195 leds in the 8 pixels'''
 		self.pixels = []
 		ind = 0
 		for p in range(0, PIXEL_AMOUNT):
-			if p == 2:
-				amount = 14
+			if p == 0 or p == 7:
+				amount = 26
+			elif p == 8:
+				amount = 40
+			elif p == 9:
+				amount = 41
 			else:
-				amount = 13
+				amount = 27
 			pixel = Pixel(ind, amount)
 			ind = ind + amount
 
